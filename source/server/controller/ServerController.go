@@ -56,7 +56,7 @@ func VerifyCaptcha(captchaId string, value string) (bool, string) {
 		if captcha.VerifyString(captchaId, value) {
 			return true, "验证成功"
 		} else {
-			return false, "验证失败"
+			return false, "验证码错误"
 		}
 	}
 }

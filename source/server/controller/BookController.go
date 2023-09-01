@@ -46,7 +46,10 @@ func GetBook(c *gin.Context) {
 	data := dao.GetBook(bookKey)
 
 	if data.Id == 0 {
-		c.JSON(500, util.Error("账本不存在！", nil))
+		c.JSON(500, gin.H{
+			"success":      false,
+			"errorMessage": "账本不存在",
+		})
 	} else {
 		sessions.Default(c).Set("bookKey", bookKey)
 		sessions.Default(c).Save()
