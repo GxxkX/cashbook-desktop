@@ -4,8 +4,9 @@ import (
 	"cashbook-server/types"
 	"cashbook-server/util"
 	"database/sql"
-	_ "modernc.org/sqlite"
 	"strconv"
+
+	_ "modernc.org/sqlite"
 )
 
 func CreateFlow(flow types.Flow) int64 {
@@ -153,6 +154,27 @@ func GetAll(bookKey string) []types.Flow {
 	sqlGetAll := `SELECT id, book_key, day, type, money, pay_type, name, description FROM flows WHERE book_key = '` + bookKey + `';`
 
 	rows, err := db.Query(sqlGetAll, bookKey)
+	util.CheckErr(err)
+
+	results := make([]types.Flow, 0)
+	if rows != nil {
+		for rows.Next() {
+			var flow types.Flow
+			err = rows.Scan(&flow.Id, &flow.BookKey, &flow.Day, &flow.Type, &flow.Money, &flow.PayType, &flow.Name, &flow.Description)
+			util.CheckErr(err)
+			results = append(results, flow)
+		}
+		err = rows.Close()
+		util.CheckErr(err)
+	}
+
+	return results
+}
+
+func GetAllByMon(bookKey string, month string, year string) []types.Flow {
+	sqlGetAll := `SELECT id, book_key, day, type, money, pay_type, name, description FROM flows WHERE book_key = '` + bookKey + `;`
+
+	rows, err := db.Query(sqlGetAll, bookKey, month, year)
 	util.CheckErr(err)
 
 	results := make([]types.Flow, 0)

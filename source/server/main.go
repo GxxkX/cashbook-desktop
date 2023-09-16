@@ -18,8 +18,9 @@ func main() {
 
 	router := gin.Default()
 	store := memstore.NewStore([]byte("secret_for_cashbook"))
+	router.Use(Cors())
 	router.Use(sessions.Sessions("bookAuthenticated", store))
-	port := ":8080"
+	port := ":131"
 
 	root := router.Group("/")
 	root.GET("/captcha/:img", controller.CaptchaHandle)
@@ -48,6 +49,7 @@ func main() {
 		adminApi.POST("/analysis/monthBar", controller.MonthBar)
 		// 流水相关
 		adminApi.GET("/flow/getAll", controller.GetAll)
+		adminApi.GET("/flow/getAllByMon", controller.GetAllByMon)
 		adminApi.POST("/flow/importFlows", controller.ImportFlows)
 		adminApi.GET("/flow", controller.GetFlowsPage)
 		adminApi.POST("/flow", controller.AddFlow)
@@ -60,16 +62,23 @@ func main() {
 		adminApi.POST("/online/upload", controller.Upload)
 		adminApi.POST("/online/download", controller.Download)
 	}
-	fmt.Println("-------- 服务启动成功：http://localhost" + port + " --------")
+	fmt.Println("-------- 服务启动成功：" + port + " --------")
 	err := router.Run(port)
 	util.CheckErr(err)
 }
 
 func openBook() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		if sessions.Default(c).Get("bookKey") == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success":      false,
+				"errorMessage": "请输入账本密钥！",
+			})
+			c.Abort()
+			return
+		}
 		bookKey := sessions.Default(c).Get("bookKey").(string)
-		if 0 == len(bookKey) {
+		if len(bookKey) == 0 {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"success":      false,
 				"errorMessage": "请输入账本密钥！",
@@ -87,6 +96,24 @@ func openBook() gin.HandlerFunc {
 			return
 		}
 
+		c.Next()
+	}
+}
+
+func Cors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		method := c.Request.Method
+		origin := c.Request.Header.Get("Origin")
+		if origin != "" {
+			c.Header("Access-Control-Allow-Origin", "*") // 可将将 * 替换为指定的域名
+			c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+			c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+			c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
+			c.Header("Access-Control-Allow-Credentials", "true")
+		}
+		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
 		c.Next()
 	}
 }

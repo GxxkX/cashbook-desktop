@@ -37,7 +37,7 @@ func GetDistList(bookKey string, Type string) []types.Dist {
 }
 
 func GetDistPage(query types.DistQuery) *types.Page {
-	sqlGetDistPage := "SELECT id, type, dist_key, dist_value, sort, book_key FROM dists WHERE 1=1"
+	sqlGetDistPage := "SELECT id, type, dist_key, dist_value, sort, book_key FROM dists"
 
 	sqlWhere := getDistWhereSql(query)
 

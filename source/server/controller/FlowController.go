@@ -4,10 +4,11 @@ import (
 	"cashbook-server/dao"
 	"cashbook-server/types"
 	"cashbook-server/util"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 )
 
 // AddFlow 新增流水
@@ -90,6 +91,13 @@ func GetFlowsPage(c *gin.Context) {
 func GetAll(c *gin.Context) {
 	bookKey := sessions.Default(c).Get("bookKey").(string)
 	data := dao.GetAll(bookKey)
+
+	c.JSON(200, util.Success(data))
+}
+
+func GetAllByMon(c *gin.Context) {
+	bookKey := sessions.Default(c).Get("bookKey").(string)
+	data := dao.GetAllByMon(bookKey, c.Query("mon"), c.Query("year"))
 
 	c.JSON(200, util.Success(data))
 }
