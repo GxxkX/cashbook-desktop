@@ -23,9 +23,11 @@ func main() {
 	port := ":131"
 
 	root := router.Group("/")
+	root.Use(Cors())
 	root.GET("/captcha/:img", controller.CaptchaHandle)
 
 	api := router.Group("/api")
+	api.Use(Cors())
 	api.GET("/book/:key", controller.GetBook)
 	api.POST("/book", controller.CreateBook)
 	api.GET("/book/list", controller.GetBookList)
